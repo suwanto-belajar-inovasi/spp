@@ -208,12 +208,6 @@
 
                         <div class="row g-3 mb-4" v-if="session.role === 'siswa'">
                             <div class="col-md-4 col-12">
-                                <div class="dash-card bg-blue shadow">
-                                    <i class="fa-solid fa-file-invoice-dollar"></i>
-                                    <h3>{{ formatRp(stats.summary.tagihan) }}</h3><p>Total Keseluruhan Tagihan</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4 col-12">
                                 <div class="dash-card bg-green shadow">
                                     <i class="fa-solid fa-hand-holding-dollar"></i>
                                     <h3>{{ formatRp(stats.summary.pendapatan) }}</h3><p>Total Telah Dibayar</p>
@@ -222,7 +216,13 @@
                             <div class="col-md-4 col-12">
                                 <div class="dash-card bg-red shadow">
                                     <i class="fa-solid fa-triangle-exclamation"></i>
-                                    <h3>{{ formatRp(stats.summary.kurang) }}</h3><p>Total Kekurangan / Sisa Tagihan</p>
+                                    <h3>{{ formatRp(stats.summary.kurang) }}</h3><p>TOTAL KEKURANGAN</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="dash-card bg-blue shadow">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                                    <h3>{{ formatRp(stats.summary.tagihan) }}</h3><p>TOTAL TAGIHAN</p>
                                 </div>
                             </div>
                         </div>
@@ -840,7 +840,10 @@
                     try {
                         const res = await this.apiCall('getModuleData', { moduleName: 'pendapatan', role: this.session.role, namaUser: this.session.nama });
                         this.loading = false;
-                        if(res.success) this.historyPembayaranSiswa = res.body.filter(r => r[2] === 'Siswa');
+                        if(res.success) {
+                            this.tableData = { header: res.header, body: res.body }; 
+                            this.historyPembayaranSiswa = res.body.filter(r => r[2] === 'Siswa');
+                        }
                     } catch(err) { this.loading = false; }
                 },
                 doPrintInvoice(row) {
