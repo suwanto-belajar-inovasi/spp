@@ -64,8 +64,7 @@
 
         #invoice-print-area, #riwayat-print-area { display: none; background: white; padding: 30px; font-family: Arial, sans-serif; color: black; }
         .invoice-kop { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .invoice-kop img { width: 70px; margin-right: 15px; }
-
+        
         /* ------------------------------------------------------------------
            CSS KHUSUS CETAK (PRINT) - ANTI BLANK PUTIH / ABU-ABU
         ------------------------------------------------------------------- */
@@ -79,15 +78,12 @@
             
             #invoice-print-area, #riwayat-print-area { display: none !important; }
             
-            /* Logic Cetak Invoice Individual */
             .printing-invoice > div:not(#invoice-print-area) { display: none !important; }
             .printing-invoice #invoice-print-area { display: block !important; width: 100% !important; }
             
-            /* Logic Cetak Riwayat Pembayaran Siswa */
             .printing-riwayat > div:not(#riwayat-print-area) { display: none !important; }
             .printing-riwayat #riwayat-print-area { display: block !important; width: 100% !important; }
 
-            /* Logic Cetak Laporan Kas/Laba Rugi */
             .printing-laporan > div:not(#laporan-view) { display: none !important; }
             .printing-laporan #laporan-view { display: block !important; width: 100% !important; }
             
@@ -183,8 +179,8 @@
                 <div class="main-container" :class="{'printing-invoice': printMode === 'invoice', 'printing-laporan': printMode === 'laporan', 'printing-riwayat': printMode === 'riwayat'}">
                     
                     <div v-show="view === 'dashboard'">
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3 col-6" v-if="session.role !== 'siswa'">
+                        <div class="row g-3 mb-4" v-if="session.role !== 'siswa'">
+                            <div class="col-md-3 col-6">
                                 <div class="dash-card bg-blue shadow">
                                     <i class="fa-solid fa-wallet"></i>
                                     <h3>{{ formatRp(stats.summary.saldo) }}</h3><p>Saldo Kas Akhir</p>
@@ -193,19 +189,40 @@
                             <div class="col-md-3 col-6">
                                 <div class="dash-card bg-green shadow">
                                     <i class="fa-solid fa-hand-holding-dollar"></i>
-                                    <h3>{{ formatRp(stats.summary.pendapatan) }}</h3><p>{{ session.role === 'siswa' ? 'Total Dibayar' : 'Total Pemasukan' }}</p>
+                                    <h3>{{ formatRp(stats.summary.pendapatan) }}</h3><p>Total Pemasukan</p>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-6" v-if="session.role !== 'siswa'">
+                            <div class="col-md-3 col-6">
                                 <div class="dash-card bg-orange shadow">
                                     <i class="fa-solid fa-cart-arrow-down"></i>
                                     <h3>{{ formatRp(stats.summary.pengeluaran) }}</h3><p>Total Pengeluaran</p>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-6" v-if="session.role !== 'siswa'">
+                            <div class="col-md-3 col-6">
                                 <div class="dash-card bg-red shadow">
                                     <i class="fa-solid fa-scale-balanced"></i>
                                     <h3>{{ formatRp(stats.summary.labaRugi) }}</h3><p>Laba / Rugi Bersih</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4" v-if="session.role === 'siswa'">
+                            <div class="col-md-4 col-12">
+                                <div class="dash-card bg-blue shadow">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                                    <h3>{{ formatRp(stats.summary.tagihan) }}</h3><p>Total Keseluruhan Tagihan</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="dash-card bg-green shadow">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                                    <h3>{{ formatRp(stats.summary.pendapatan) }}</h3><p>Total Telah Dibayar</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="dash-card bg-red shadow">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    <h3>{{ formatRp(stats.summary.kurang) }}</h3><p>Total Kekurangan / Sisa Tagihan</p>
                                 </div>
                             </div>
                         </div>
@@ -234,7 +251,10 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="card-custom p-4 h-100 text-center">
-                                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie text-primary me-2"></i> Grafik Pendapatan</h6>
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="fa-solid fa-chart-pie text-primary me-2"></i> 
+                                        {{ session.role === 'siswa' ? 'Grafik Tagihan & Pembayaran' : 'Grafik Pendapatan' }}
+                                    </h6>
                                     <canvas id="chartIncome" style="max-height: 220px; width:100%;"></canvas>
                                 </div>
                             </div>
@@ -697,7 +717,7 @@
                     loading: false, isLoggedIn: false, view: 'dashboard', sidebarOpen: false, showPass: false, printMode: '',
                     form: { user: '', pass: '' },
                     session: {}, tableData: { header: [], body: [] },
-                    stats: { summary: { saldo:0, pendapatan:0, pengeluaran:0, labaRugi:0 }, recentPendapatan: [], chartPendapatan: {labels:[], data:[]} },
+                    stats: { summary: { saldo:0, pendapatan:0, pengeluaran:0, labaRugi:0, tagihan:0, kurang:0 }, recentPendapatan: [], chartPendapatan: {labels:[], data:[]} },
                     modal: { show: false, action: 'add', identifier: null, formData: [] },
                     
                     historyPembayaranSiswa: [], searchHistory: '', expandedHistory: null,
@@ -820,10 +840,7 @@
                     try {
                         const res = await this.apiCall('getModuleData', { moduleName: 'pendapatan', role: this.session.role, namaUser: this.session.nama });
                         this.loading = false;
-                        if(res.success) {
-                            this.tableData = { header: res.header, body: res.body }; 
-                            this.historyPembayaranSiswa = res.body.filter(r => r[2] === 'Siswa');
-                        }
+                        if(res.success) this.historyPembayaranSiswa = res.body.filter(r => r[2] === 'Siswa');
                     } catch(err) { this.loading = false; }
                 },
                 doPrintInvoice(row) {
@@ -939,8 +956,17 @@
                     if (myChart) myChart.destroy();
                     const ctx = document.getElementById('chartIncome');
                     if(ctx && this.stats.chartPendapatan.labels.length > 0) {
+                        let chartColors = ['#3498db', '#2ecc71', '#f1c40f', '#e74c3c', '#9b59b6'];
+                        if(this.session.role === 'siswa') {
+                            chartColors = ['#e74c3c', '#2ecc71']; 
+                        }
+                        
                         myChart = new Chart(ctx, {
-                            type: 'doughnut', data: { labels: this.stats.chartPendapatan.labels, datasets: [{ data: this.stats.chartPendapatan.data, backgroundColor: ['#3498db', '#2ecc71', '#f1c40f', '#e74c3c', '#9b59b6'] }] },
+                            type: 'doughnut', 
+                            data: { 
+                                labels: this.stats.chartPendapatan.labels, 
+                                datasets: [{ data: this.stats.chartPendapatan.data, backgroundColor: chartColors }] 
+                            },
                             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 10} } } } }
                         });
                     }
